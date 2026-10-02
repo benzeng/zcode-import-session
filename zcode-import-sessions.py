@@ -159,6 +159,14 @@ def sql_quote(path):
     return path.replace(chr(39), chr(39) * 2)
 
 
+def _dir_after_map(directory, mappings):
+    """dry-run 时展示目录映射后的预期结果。"""
+    for old, new in mappings:
+        if directory == old:
+            return new
+    return directory
+
+
 def main():
     ap = argparse.ArgumentParser(description='导入另一台机器备份的 ZCode 会话')
     ap.add_argument('backup', help='备份目录 (含 cli/ 与 v2/)')
@@ -480,7 +488,7 @@ def main():
         b = bak_ro.execute(f'SELECT COUNT(*) FROM {table} WHERE {key} IN ({q})', sids).fetchone()[0]
         l = loc_ro.execute(f'SELECT COUNT(*) FROM {table} WHERE {key} IN ({q})', sids).fetchone()[0]
         note = ''
-        if b != l:
+        if b != l and not dry:
             if table == 'session_input':
                 note = '  (runtime_command_N 全局 id 撞号, 属预期)'
             else:
@@ -513,12 +521,15 @@ def main():
             anomaly = True
     print(f'  db.sqlite quick_check: {loc_ro.execute("PRAGMA quick_check").fetchone()[0]}')
     print()
-    print(f'导入的会话 ({len(sids)} 个):')
+    print(f'{"将导入" if dry else "导入"}的会话 ({len(sessions)} 个):')
+    src_ro = bak_ro if dry else loc_ro  # dry-run 时数据未写入, 从备份读目录与消息数
     for sid, title, _directory, tc in sessions:
-        row = loc_ro.execute('SELECT directory FROM session WHERE id=?', (sid,)).fetchone()
-        nmsg = loc_ro.execute('SELECT COUNT(*) FROM message WHERE session_id=?', (sid,)).fetchone()[0]
+        row = src_ro.execute('SELECT directory FROM session WHERE id=?', (sid,)).fetchone()
+        nmsg = src_ro.execute('SELECT COUNT(*) FROM message WHERE session_id=?', (sid,)).fetchone()[0]
+        cur = row[0] if row else '?'
+        show = _dir_after_map(cur, mappings) if dry else cur
         print(f'  [{time.strftime("%Y-%m-%d", time.localtime(tc / 1000))}] {title}  ({nmsg} 条消息)')
-        print(f'      -> {row[0] if row else "?"}')
+        print(f'      -> {show}')
     bak_ro.close()
     loc_ro.close()
 
