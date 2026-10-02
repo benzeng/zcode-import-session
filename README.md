@@ -37,32 +37,32 @@ python zcode-import-sessions.py <备份目录> --map "F:\old\path=D:\new\path"
 ```text
 $ python zcode-import-sessions.py E:\backup\zcode --list
 备份 E:\backup\zcode 共 3 个会话:
-  [2026-09-18] 优化设计方案文档  (81 条消息)
-      目录: F:\Other\Project
-  [2026-09-21] 模型调研笔记  (277 条消息)
-      目录: F:\Developer2024\models\UncensoredReseach
-  [2026-09-21] CodeMeter  (4503 条消息)
-      目录: F:\Developer2024\models\UncensoredReseach
+  [2026-09-18] 周报与文档整理  (36 条消息)
+      目录: F:\docs\research
+  [2026-09-21] 爬虫脚本调试  (142 条消息)
+      目录: F:\work\shop-app
+  [2026-09-21] 商城后端重构  (2860 条消息)
+      目录: F:\work\shop-app
 ```
 
 然后**重复指定 `--map`**，一条映射一个旧目录；每个会话按自己记录的目录精确匹配各自的映射：
 
 ```bash
 python zcode-import-sessions.py E:\backup\zcode \
-  --map "F:\Developer2024\models\UncensoredReseach=E:\work\codemeter" \
-  --map "F:\Other\Project=D:\projects\other"
+  --map "F:\work\shop-app=D:\dev\shop-app" \
+  --map "F:\docs\research=D:\docs\research"
 ```
 
 `--dry-run` 的输出会直接展示每个会话映射后的落点，核对无误再去掉 `--dry-run` 正式执行：
 
 ```text
 将导入的会话 (3 个):
-  [2026-09-18] 优化设计方案文档  (81 条消息)
-      -> D:\projects\other
-  [2026-09-21] 模型调研笔记  (277 条消息)
-      -> E:\work\codemeter
-  [2026-09-21] CodeMeter  (4503 条消息)
-      -> E:\work\codemeter
+  [2026-09-18] 周报与文档整理  (36 条消息)
+      -> D:\docs\research
+  [2026-09-21] 爬虫脚本调试  (142 条消息)
+      -> D:\dev\shop-app
+  [2026-09-21] 商城后端重构  (2860 条消息)
+      -> D:\dev\shop-app
 ```
 
 说明：映射与 `session.directory` **整串相等**才算匹配；没被任何映射覆盖的会话按原路径导入（预检时会列出并警告）；新旧路径都写完整绝对路径，Windows 路径整体加引号。
