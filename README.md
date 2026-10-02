@@ -30,6 +30,43 @@ python zcode-import-sessions.py <备份目录> --map "F:\old\path=D:\new\path"
 
 导入后：**完全退出 ZCode（托盘右键退出，仅关窗口是最小化）再启动**，然后在欢迎页"最近项目"中打开新目录——侧栏"项目"区显示的是**当前打开的工作区标签页**，不是"所有有会话的目录"，打开一次后其下即列出导入的会话。
 
+### 示例：为多个不同目录的会话分别映射路径
+
+备份里各会话的工作目录往往不相同。先用 `--list` 看每个会话的原始目录：
+
+```text
+$ python zcode-import-sessions.py E:\backup\zcode --list
+备份 E:\backup\zcode 共 3 个会话:
+  [2026-09-18] 优化设计方案文档  (81 条消息)
+      目录: F:\Other\Project
+  [2026-09-21] 模型调研笔记  (277 条消息)
+      目录: F:\Developer2024\models\UncensoredReseach
+  [2026-09-21] CodeMeter  (4503 条消息)
+      目录: F:\Developer2024\models\UncensoredReseach
+```
+
+然后**重复指定 `--map`**，一条映射一个旧目录；每个会话按自己记录的目录精确匹配各自的映射：
+
+```bash
+python zcode-import-sessions.py E:\backup\zcode \
+  --map "F:\Developer2024\models\UncensoredReseach=E:\work\codemeter" \
+  --map "F:\Other\Project=D:\projects\other"
+```
+
+`--dry-run` 的输出会直接展示每个会话映射后的落点，核对无误再去掉 `--dry-run` 正式执行：
+
+```text
+将导入的会话 (3 个):
+  [2026-09-18] 优化设计方案文档  (81 条消息)
+      -> D:\projects\other
+  [2026-09-21] 模型调研笔记  (277 条消息)
+      -> E:\work\codemeter
+  [2026-09-21] CodeMeter  (4503 条消息)
+      -> E:\work\codemeter
+```
+
+说明：映射与 `session.directory` **整串相等**才算匹配；没被任何映射覆盖的会话按原路径导入（预检时会列出并警告）；新旧路径都写完整绝对路径，Windows 路径整体加引号。
+
 ## 参数
 
 | 参数 | 说明 |
